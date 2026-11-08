@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Архив</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Stardos+Stencil:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#12161a; --iron:#2a3036; --iron-hi:#3b444c; --iron-lo:#1b2025;
+  --steel:#cdd5da; --bone:#e8e1b8; --rust:#c2614f; --rivet:#586570;
+  --stencil:'Stardos Stencil','Arial Narrow',Impact,sans-serif;
+  --type:'Special Elite','Courier New',monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:
+    radial-gradient(ellipse at 50% 35%,#1d242a 0%,var(--bg) 70%);
+  color:var(--steel);
+  font-family:var(--type);
+  display:grid;place-items:center;
+  padding:24px;
+}
+.vault{
+  position:relative;
+  width:min(100%,560px);
+  height:440px;
+  border:2px solid #0c0f11;
+  border-radius:6px;
+  background:var(--iron-lo);
+  overflow:hidden;
+  box-shadow:0 0 0 6px var(--iron),0 0 0 8px #0c0f11,0 30px 60px rgba(0,0,0,.55);
+}
+/* message revealed behind the doors */
+.reveal{
+  position:absolute;inset:0;
+  display:grid;place-items:center;
+  padding:32px;
+  background:#0f1316;
+  visibility:hidden;
+}
+.reveal p{
+  margin:0;max-width:34ch;
+  color:var(--bone);
+  font-size:1.2rem;line-height:1.7;
+  white-space:pre-line;
+}
+.vault.open .reveal{visibility:visible}
+/* the two door halves */
+.door{
+  position:absolute;top:0;bottom:0;width:50%;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 5px),
+    linear-gradient(180deg,var(--iron-hi),var(--iron) 45%,var(--iron-lo));
+  transition:transform 1.4s cubic-bezier(.7,0,.2,1);
+}
+.door.l{left:0;border-right:2px solid #0c0f11}
+.door.r{right:0;border-left:2px solid #0c0f11}
+.door::before,.door::after{
+  content:"";position:absolute;width:12px;height:12px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#8a98a3,var(--rivet) 55%,#2d353b);
+  box-shadow:0 1px 2px rgba(0,0,0,.6);
+}
+.door.l::before{top:16px;left:16px}.door.l::after{bottom:16px;left:16px}
+.door.r::before{top:16px;right:16px}.door.r::after{bottom:16px;right:16px}
+.vault.open .door.l{transform:translateX(-101%)}
+.vault.open .door.r{transform:translateX(101%)}
+/* lock plate over the seam */
+.lock{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  width:min(86%,320px);
+  padding:24px 22px 20px;
+  background:linear-gradient(180deg,#323a41,#262c32);
+  border:2px solid #0c0f11;border-radius:4px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 10px 24px rgba(0,0,0,.5);
+  transition:opacity .35s ease,visibility .35s;
+}
+.vault.open .lock{opacity:0;visibility:hidden}
+h1{
+  margin:0 0 6px;
+  font-family:var(--stencil);font-weight:700;
+  font-size:2rem;letter-spacing:.04em;color:var(--steel);
+}
+.hint{margin:0 0 18px;font-size:.95rem;line-height:1.5;color:#9fabb3}
+label{display:block;margin-bottom:6px;font-size:.9rem;color:var(--steel)}
+input{
+  width:100%;padding:11px 12px;
+  font:inherit;font-size:1.1rem;color:var(--bone);
+  background:#0f1316;border:2px solid #0c0f11;border-radius:3px;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.6);
+}
+input:focus-visible,button:focus-visible{outline:2px solid var(--bone);outline-offset:2px}
+.lock.bad input{border-color:var(--rust)}
+button{
+  width:100%;margin-top:12px;padding:11px 12px;
+  font:inherit;font-size:1.05rem;color:#12161a;
+  background:linear-gradient(180deg,#d6dde1,#a9b4bb);
+  border:2px solid #0c0f11;border-radius:3px;cursor:pointer;
+}
+button:hover{background:linear-gradient(180deg,#e4eaed,#b7c1c7)}
+button:disabled{opacity:.6;cursor:wait}
+.error{min-height:1.4em;margin:12px 0 0;font-size:.9rem;line-height:1.4;color:var(--rust)}
+@media (max-width:420px){
+  .vault{height:460px}
+  h1{font-size:1.7rem}
+}
+@media (prefers-reduced-motion:reduce){
+  .door,.lock{transition:none}
+}
+</style>
+</head>
+<body>
+<main class="vault" id="vault">
+  <section class="reveal" id="reveal" aria-live="polite"><p id="message"></p></section>
+  <div class="door l" aria-hidden="true"></div>
+  <div class="door r" aria-hidden="true"></div>
+  <form class="lock" id="lock" autocomplete="off">
+    <h1>Архив закрыт</h1>
+    <p class="hint">Назовите того, кто остался снаружи.</p>
+    <label for="name">Имя</label>
+    <input id="name" name="name" type="text" required autofocus spellcheck="false" autocapitalize="off">
+    <button type="submit" id="go">Открыть</button>
+    <p class="error" id="error" role="alert"></p>
+  </form>
+</main>
+
+<script>
+// Зашифрованное сообщение. Чтобы заменить текст или пароль, используйте encrypt-tool.html
+const PAYLOAD = "3+bxk1elbOgt6YVPI3hwgxHfPf9FGQRQm7M1ZlkwUmSOt8js0+9vGkqc6pE8ip5Q/d0++TJbUqICPmIPkdQHfOAYa7gHu8OUysA77vbu3v6bEtWxlVeRLkCmlIAmpYxS1lA/qtVJ8NmN0KXvPYmceGJoCgJfqa0exmFf0/bu7rfggWuX80ybxqdU30VdAf+G8VMREhnquYRBJxzgRnow0SIxsM4=";
+
+const norm = s => s.normalize('NFC').trim().toLowerCase().replace(/ё/g,'е').replace(/\s+/g,' ');
+
+async function decrypt(password, payload){
+  const data = Uint8Array.from(atob(payload), c => c.charCodeAt(0));
+  const salt = data.slice(0,16), iv = data.slice(16,28), ct = data.slice(28);
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(norm(password)), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    {name:'PBKDF2', salt, iterations:250000, hash:'SHA-256'},
+    base, {name:'AES-GCM', length:256}, false, ['decrypt']);
+  const plain = await crypto.subtle.decrypt({name:'AES-GCM', iv}, key, ct);
+  return new TextDecoder().decode(plain);
+}
+
+const form = document.getElementById('lock');
+const err = document.getElementById('error');
+const btn = document.getElementById('go');
+
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  err.textContent = '';
+  form.classList.remove('bad');
+  if (!window.crypto || !crypto.subtle){
+    err.textContent = 'Браузер не может проверить имя. Откройте сайт по адресу, который начинается с https.';
+    return;
+  }
+  btn.disabled = true;
+  try{
+    const text = await decrypt(document.getElementById('name').value, PAYLOAD);
+    document.getElementById('message').textContent = text;
+    document.getElementById('vault').classList.add('open');
+  }catch(_){
+    form.classList.add('bad');
+    err.textContent = 'Имя не подходит. Архив остаётся закрытым.';
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
